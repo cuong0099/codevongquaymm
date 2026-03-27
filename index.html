@@ -455,7 +455,7 @@
       ctx.clearRect(0, 0, size, size);
 
       prizes.forEach((prize, index) => {
-        const startAngle = index * arc - Math.PI / 2;
+        const startAngle = index * arc - Math.PI / 2 + arc / 2;
         const endAngle = startAngle + arc;
 
         ctx.beginPath();
@@ -542,8 +542,8 @@
       const segmentStart = index * arcDeg;
       const safePadding = Math.min(arcDeg * 0.22, 12);
       const randomInsideSegment = safePadding + Math.random() * Math.max(arcDeg - safePadding * 2, 1);
-      const targetAngle = segmentStart + randomInsideSegment;
-      const pointerAngle = 180;
+      const targetAngle = segmentStart + randomInsideSegment - 90 + arcDeg / 2;
+      const pointerAngle = 90;
       const extraSpins = 360 * (5 + Math.floor(Math.random() * 2));
       const finalRotation = extraSpins + (pointerAngle - targetAngle);
 
