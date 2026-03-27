@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vòng Quay May Mắn</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: linear-gradient(135deg, #0f172a, #1e293b 40%, #334155);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    .wheel-panel {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .wheel-panel::before {
+      content: "";
+      position: absolute;
+      inset: auto -60px -80px auto;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(255,215,0,0.35), transparent 70%);
+      filter: blur(10px);
+      pointer-events: none;
+    }
+
+    .title {
+      font-size: 36px;
+      font-weight: 800;
+      margin: 0 0 8px;
+      text-align: center;
+    }
+
+    .subtitle {
+      margin: 0 0 24px;
+      opacity: 0.85;
+      text-align: center;
+      font-size: 15px;
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: 460px;
+      height: 460px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pointer {
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 24px solid transparent;
+      border-right: 24px solid transparent;
+      border-top: 0;
+      border-bottom: 48px solid #facc15;
+      z-index: 5;
+      filter: drop-shadow(0 8px 18px rgba(0,0,0,0.4));
+    }
+
+    .wheel {
+      width: 420px;
+      height: 420px;
+      border-radius: 50%;
+      border: 12px solid rgba(255,255,255,0.9);
+      position: relative;
+      transition: transform 5s cubic-bezier(0.12, 0.95, 0.16, 1);
+      box-shadow:
+        0 0 0 12px rgba(255,255,255,0.08),
+        0 20px 45px rgba(0,0,0,0.45);
+      overflow: hidden;
+    }
+
+    .wheel-center {
+      position: absolute;
+      width: 92px;
+      height: 92px;
+      background: #fff;
+      color: #0f172a;
+      border-radius: 50%;
+      z-index: 6;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      border: 8px solid #f8fafc;
+    }
+
+    .controls {
+      margin-top: 26px;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      border: none;
+      outline: none;
+      cursor: pointer;
+      border-radius: 14px;
+      padding: 14px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      transition: 0.2s ease;
+    }
+
+    .spin-btn {
+      background: linear-gradient(135deg, #f59e0b, #facc15);
+      color: #111827;
+      box-shadow: 0 12px 24px rgba(245, 158, 11, 0.32);
+    }
+
+    .spin-btn:hover { transform: translateY(-2px); }
+    .spin-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .ghost-btn {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .side-panel {
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .section-title {
+      margin: 0 0 10px;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .result-box {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .result-label {
+      font-size: 13px;
+      opacity: 0.75;
+      margin-bottom: 8px;
+    }
+
+    .result-value {
+      font-size: 28px;
+      font-weight: 800;
+    }
+
+    .config-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 14px;
+      opacity: 0.9;
+      font-weight: 600;
+    }
+
+    input, textarea {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.08);
+      color: white;
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .hint {
+      font-size: 13px;
+      opacity: 0.72;
+      line-height: 1.5;
+    }
+
+    .prize-list {
+      display: grid;
+      gap: 10px;
+      max-height: 280px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .prize-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 14px;
+    }
+
+    .badge {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(250,204,21,0.16);
+      color: #fde68a;
+      font-weight: 700;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .footer-note {
+      font-size: 12px;
+      opacity: 0.7;
+      line-height: 1.6;
+    }
+
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      padding: 20px;
+    }
+
+    .popup-overlay.show {
+      display: flex;
+    }
+
+    .popup-box {
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.08));
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 24px;
+      padding: 28px 24px;
+      text-align: center;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.45);
+      backdrop-filter: blur(20px);
+      animation: popIn 0.25s ease;
+    }
+
+    .popup-title {
+      margin: 0 0 10px;
+      font-size: 30px;
+      font-weight: 900;
+      color: #facc15;
+    }
+
+    .popup-message {
+      margin: 0 0 22px;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .popup-ok {
+      background: linear-gradient(135deg, #f59e0b, #facc15);
+      color: #111827;
+      min-width: 120px;
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+      .wheel-wrap {
+        width: 360px;
+        height: 360px;
+      }
+      .wheel {
+        width: 330px;
+        height: 330px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .title { font-size: 28px; }
+      .wheel-wrap { width: 300px; height: 300px; }
+      .wheel { width: 280px; height: 280px; }
+      .wheel-center { width: 74px; height: 74px; font-size: 14px; }
+      .config-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card wheel-panel">
+      <h1 class="title">🎯 Vòng Quay May Mắn</h1>
+      <p class="subtitle">Ng Quoc Cuong</p>
+
+      <div class="wheel-wrap">
+        <div class="pointer"></div>
+        <canvas id="wheelCanvas" class="wheel" width="420" height="420"></canvas>
+        <div class="wheel-center">LUCK</div>
+      </div>
+
+      <div class="controls">
+        <button id="spinBtn" class="spin-btn">Quay ngay</button>
+        <button id="resetBtn" class="ghost-btn">Đặt lại</button>
+      </div>
+    </div>
+
+    <div class="card side-panel">
+      <div>
+        <h2 class="section-title">Kết quả</h2>
+        <div class="result-box">
+          <div class="result-label">Phần thưởng vừa quay được</div>
+          <div id="resultText" class="result-value">Chưa quay</div>
+        </div>
+      </div>
+
+      <div>
+        <h2 class="section-title">Cấu hình</h2>
+        <div class="config-grid">
+          <div class="input-group">
+            <label for="winRate">Tỷ lệ trúng (%)</label>
+            <input id="winRate" type="number" min="0" max="100" value="99" />
+          </div>
+          <div class="input-group">
+            <label for="loseLabel">Tên ô trượt</label>
+            <input id="loseLabel" type="text" value="Không được tặng" />
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="input-group">
+          <label for="prizeInput">Danh sách phần thưởng thắng (mỗi dòng là 1 phần quà)</label>
+          <textarea id="prizeInput">Được tặng ly nước</textarea>
+        </div>
+        <p class="hint">Vòng quay hiện chỉ có 2 ô: <b>Được tặng ly nước</b> và <b>Không được tặng</b>. Bạn vẫn có thể chỉnh tỷ lệ trúng ở bên cạnh.</p>
+      </div>
+
+      <div>
+        <h2 class="section-title">Danh sách ô hiện tại</h2>
+        <div id="prizeList" class="prize-list"></div>
+      </div>
+
+      <div class="footer-note">
+        Gợi ý: nếu dùng cho sự kiện thật, nên công khai thể lệ và xác suất rõ ràng để tránh gây hiểu nhầm cho người chơi.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('wheelCanvas');
+    const ctx = canvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultText = document.getElementById('resultText');
+    const prizeInput = document.getElementById('prizeInput');
+    const winRateInput = document.getElementById('winRate');
+    const loseLabelInput = document.getElementById('loseLabel');
+    const prizeList = document.getElementById('prizeList');
+    const popupOverlay = document.getElementById('popupOverlay');
+    const popupTitle = document.getElementById('popupTitle');
+    const popupMessage = document.getElementById('popupMessage');
+    const popupOkBtn = document.getElementById('popupOkBtn');
+
+    let currentRotation = 0;
+    let spinning = false;
+
+    const colors = [
+      '#f97316', '#06b6d4', '#a855f7', '#22c55e',
+      '#eab308', '#ef4444', '#3b82f6', '#ec4899', '#14b8a6'
+    ];
+
+    function getPrizes() {
+      const wins = prizeInput.value
+        .split('\n')
+        .map(item => item.trim())
+        .filter(Boolean);
+
+      const loseLabel = loseLabelInput.value.trim() || 'Chúc bạn may mắn lần sau';
+      return [...wins, loseLabel];
+    }
+
+    function drawWheel() {
+      const prizes = getPrizes();
+      const size = canvas.width;
+      const center = size / 2;
+      const radius = center;
+      const arc = (Math.PI * 2) / prizes.length;
+
+      ctx.clearRect(0, 0, size, size);
+
+      prizes.forEach((prize, index) => {
+        const startAngle = index * arc - Math.PI / 2;
+        const endAngle = startAngle + arc;
+
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[index % colors.length];
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(startAngle + arc / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#fff';
+        ctx.font = 'bold 16px Arial';
+
+        const maxText = prize.length > 18 ? prize.slice(0, 18) + '…' : prize;
+        ctx.fillText(maxText, radius - 22, 6);
+        ctx.restore();
+      });
+    }
+
+    function renderPrizeList() {
+      const prizes = getPrizes();
+      const winItems = prizes.slice(0, -1);
+      const loseItem = prizes[prizes.length - 1];
+
+      prizeList.innerHTML = '';
+
+      winItems.forEach((item) => {
+        const row = document.createElement('div');
+        row.className = 'prize-item';
+        row.innerHTML = `<span>${item}</span><span class="badge">Ô trúng</span>`;
+        prizeList.appendChild(row);
+      });
+
+      const loseRow = document.createElement('div');
+      loseRow.className = 'prize-item';
+      loseRow.innerHTML = `<span>${loseItem}</span><span class="badge">Ô trượt</span>`;
+      prizeList.appendChild(loseRow);
+    }
+
+    function chooseResultIndex() {
+      const prizes = getPrizes();
+      const winRate = Math.max(0, Math.min(100, Number(winRateInput.value) || 0));
+      const random = Math.random() * 100;
+
+      const isWin = random < winRate;
+
+      if (isWin) {
+        return Math.floor(Math.random() * (prizes.length - 1));
+      }
+
+      return prizes.length - 1;
+    }
+
+    function showPopup(isWin, prize) {
+      popupTitle.textContent = isWin ? 'Chúc mừng' : 'Thông báo';
+      popupMessage.textContent = isWin ? 'Bạn được tặng ly nước' : 'Rất tiếc, lần này bạn không được tặng';
+      popupOverlay.classList.add('show');
+      popupOkBtn.focus();
+    }
+
+    function hidePopup() {
+      popupOverlay.classList.remove('show');
+    }
+
+    function spinWheel() {
+      if (spinning) return;
+
+      hidePopup();
+      const prizes = getPrizes();
+      if (prizes.length < 2) {
+        alert('Cần ít nhất 1 ô trúng và 1 ô trượt.');
+        return;
+      }
+
+      spinning = true;
+      spinBtn.disabled = true;
+      resultText.textContent = 'Đang quay...';
+
+      const index = chooseResultIndex();
+      const arcDeg = 360 / prizes.length;
+      const segmentStart = index * arcDeg;
+      const safePadding = Math.min(arcDeg * 0.22, 12);
+      const randomInsideSegment = safePadding + Math.random() * Math.max(arcDeg - safePadding * 2, 1);
+      const targetAngle = segmentStart + randomInsideSegment;
+      const pointerAngle = 90;
+      const extraSpins = 360 * (5 + Math.floor(Math.random() * 2));
+      const finalRotation = extraSpins + (pointerAngle - targetAngle);
+
+      currentRotation += finalRotation;
+      canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+      setTimeout(() => {
+        const isWin = prizes[index] === 'Được tặng ly nước';
+        resultText.textContent = isWin ? 'Chúc mừng - Được tặng ly nước' : 'Không được tặng';
+        showPopup(isWin, prizes[index]);
+        spinning = false;
+        spinBtn.disabled = false;
+      }, 5200);
+    }
+
+    function resetWheel() {
+      currentRotation = 0;
+      spinning = false;
+      canvas.style.transition = 'none';
+      canvas.style.transform = 'rotate(0deg)';
+      resultText.textContent = 'Chưa quay';
+      spinBtn.disabled = false;
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          canvas.style.transition = 'transform 5s cubic-bezier(0.12, 0.95, 0.16, 1)';
+        });
+      });
+    }
+
+    spinBtn.addEventListener('click', spinWheel);
+    resetBtn.addEventListener('click', resetWheel);
+    popupOkBtn.addEventListener('click', hidePopup);
+    popupOverlay.addEventListener('click', (e) => {
+      if (e.target === popupOverlay) hidePopup();
+    });
+    prizeInput.addEventListener('input', () => {
+      drawWheel();
+      renderPrizeList();
+    });
+    loseLabelInput.addEventListener('input', () => {
+      drawWheel();
+      renderPrizeList();
+    });
+    winRateInput.addEventListener('input', () => {
+      const value = Math.max(0, Math.min(100, Number(winRateInput.value) || 0));
+      winRateInput.value = value;
+    });
+
+    drawWheel();
+    renderPrizeList();
+    });
+  </script>
+  <div id="popupOverlay" class="popup-overlay">
+    <div class="popup-box">
+      <h3 id="popupTitle" class="popup-title">Chúc mừng</h3>
+      <p id="popupMessage" class="popup-message">Bạn được tặng ly nước</p>
+      <button id="popupOkBtn" class="popup-ok">OK</button>
+    </div>
+  </div>
+</body>
+</html>
