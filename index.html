@@ -355,7 +355,7 @@
   <div class="app">
     <div class="card wheel-panel">
       <h1 class="title">🎯 Vòng Quay May Mắn</h1>
-      <p class="subtitle">Ng Quoc Cuong</p>
+      <p class="subtitle">Giao diện đầy đủ, hiệu ứng quay mượt, có thể chỉnh tỉ lệ trúng ngay trên web.</p>
 
       <div class="wheel-wrap">
         <div class="pointer"></div>
@@ -543,7 +543,7 @@
       const safePadding = Math.min(arcDeg * 0.22, 12);
       const randomInsideSegment = safePadding + Math.random() * Math.max(arcDeg - safePadding * 2, 1);
       const targetAngle = segmentStart + randomInsideSegment;
-      const pointerAngle = 90;
+      const pointerAngle = 180;
       const extraSpins = 360 * (5 + Math.floor(Math.random() * 2));
       const finalRotation = extraSpins + (pointerAngle - targetAngle);
 
